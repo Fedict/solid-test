@@ -27,6 +27,7 @@ package be.fedict.demo.solid.common;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -34,6 +35,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.logging.Level;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -65,7 +67,7 @@ public class Solid {
 	 * @throws IOException
 	 * @throws InterruptedException 
 	 */
-	public static Model get(URI uri) throws IOException, InterruptedException {
+	public static Model getModel(URI uri) throws IOException, InterruptedException {
 		LOG.info("GET {}", uri);
 
 		HttpRequest req = HttpRequest.newBuilder().timeout(Duration.ofMinutes(1))
@@ -83,17 +85,17 @@ public class Solid {
 	 * Post a series of triples to Solid
 	 * 
 	 * @param uri
-	 * @param dao 
+	 * @param m
 	 * @return HTTP status code 
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public static int post(URI uri, Dao dao) throws IOException, InterruptedException {
+	public static int postModel(URI uri, Model m) throws IOException, InterruptedException {
 		LOG.info("POST {}", uri);
 
 		HttpRequest req = HttpRequest.newBuilder().timeout(Duration.ofMinutes(1))
 			.uri(uri).header("Content-Type", RDFFormat.TURTLE.getDefaultMIMEType())
-			.POST(BodyPublishers.ofString(dao.toTurtle()))
+			.POST(BodyPublishers.ofString(Dao.toTurtle(m)))
 			.build();
 		
 		HttpResponse<String> resp = client.send(req, BodyHandlers.ofString());
@@ -112,11 +114,20 @@ public class Solid {
 	 */
 	public static <T extends Dao> T get(URI uri, Class<T> dao) {
 		try {
-			Model m = get(uri);
+			Model m = getModel(uri);
 			return dao.getConstructor(Model.class).newInstance(m);
-		} catch (Exception ex) {
-			//
+		} catch (IOException | IllegalAccessException | IllegalArgumentException | InstantiationException | 
+				InterruptedException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+			LOG.warn(ex.getMessage());
 		}
 		return null;
+	}
+	
+	public static void post(URI uri, Model m) {
+		try {
+			postModel(uri, m);
+		} catch (IOException | InterruptedException ex) {
+			LOG.warn(ex.getMessage());
+		}
 	}
 }

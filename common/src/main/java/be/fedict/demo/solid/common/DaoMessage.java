@@ -25,19 +25,12 @@
  */
 package be.fedict.demo.solid.common;
 
-import java.util.Optional;
 import org.eclipse.rdf4j.model.BNode;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.FOAF;
-import org.eclipse.rdf4j.model.vocabulary.LDP;
-import org.eclipse.rdf4j.model.vocabulary.VCARD4;
 
 /**
  * Data object
@@ -61,12 +54,14 @@ public class DaoMessage extends Dao {
 		return description;
 	}
 
-	public void toModel() {
+	public Model toModel() {
 		Model m = new LinkedHashModel();
 		
 		BNode b = createBNode("a");
 		m.add(b, DCTERMS.TITLE, createLiteral(title));
 		m.add(b, DCTERMS.DESCRIPTION, createLiteral(description));
+		
+		return m;
 	}
 
 	public DaoMessage(String title, String message) {

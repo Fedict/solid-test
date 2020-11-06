@@ -58,11 +58,7 @@ public class Main implements Runnable {
 		URI inbox = URI.create(dao.getInbox().toString());
 		
 		DaoMessage msg = new DaoMessage(title, desc);
-		try {
-			Solid.post(inbox, msg);
-		} catch (Exception ex) {
-//
-		}
+		Solid.post(inbox, msg.toModel());
 	}
 
 	public static void main(String[] args) {

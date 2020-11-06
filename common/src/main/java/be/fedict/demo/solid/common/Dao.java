@@ -80,7 +80,7 @@ public abstract class Dao {
 	 * 
 	 * @return 
 	 */
-	public String toTurtle() {
+	public static String toTurtle(Model m) {
 		StringWriter str = new StringWriter();
 		Rio.write(m, str, RDFFormat.TURTLE);
 		return str.toString();

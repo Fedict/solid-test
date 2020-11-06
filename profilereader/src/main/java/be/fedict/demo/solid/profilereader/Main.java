@@ -57,6 +57,7 @@ public class Main implements Callable<Integer> {
 		DaoProfile profile = Solid.get(uri, new DaoProfile());
 
 		System.out.println("Name : " + profile.getName());
+		System.out.println("Email : " + profile.getMail());
 
 		return 0;
 	}

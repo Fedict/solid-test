@@ -23,46 +23,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fedict.demo.solid.profilereader;
+package be.fedict.demo.solid.common;
 
-import be.fedict.demo.solid.common.Dao;
-import be.fedict.demo.solid.common.DaoProfile;
-import be.fedict.demo.solid.common.Solid;
-import java.net.URI;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
-
 /**
- *
+ * Data object
+ * 
  * @author Bart Hanssens
  */
-@Command(name = "profilereader", version = "checksum 1.0", description = "Read SOLID profile.")
-public class Main implements Callable<Integer> {
-	@Parameters(index = "0", arity = "1", description = "The URL of name.")
-    private String name;
-
-	@Override
-	public Integer call() throws Exception {
-		URI uri = URI.create(name + "/profile/card");
-		
-		DaoProfile profile = Solid.get(uri, new DaoProfile());
-
-		System.out.println("Name : " + profile.getName());
-
-		return 0;
+public class DaoProfile extends Dao {
+	private IRI iri;
+	private String name;
+	
+	public IRI getIRI() {
+		return iri;
 	}
 
-	public static void main(String[] args) {
-        int exitCode = new CommandLine(new Main()).execute(args);
-        System.exit(exitCode);		
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public DaoProfile fromModel(Model m) {
+		Optional<Statement> st1 = Dao.getStatement(m, null, FOAF.PRIMARY_TOPIC);
+		iri = st1.isPresent() ? (IRI) st1.get().getObject() : null;
+		
+		Optional<Statement> st2 = Dao.getStatement(m, iri, FOAF.NAME);
+		name = st2.get().getObject().toString();
+		
+		return this;
 	}
 }

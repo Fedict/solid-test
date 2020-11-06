@@ -32,6 +32,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -58,12 +60,22 @@ public class Solid {
 	 * @throws IOException
 	 * @throws InterruptedException 
 	 */
-	public static Model get (URI uri) throws IOException, InterruptedException {
+	public static Model get(URI uri) throws IOException, InterruptedException {
 		HttpRequest req = HttpRequest.newBuilder().timeout(Duration.ofMinutes(1))
 			.uri(uri).header("Content-Type", RDFFormat.TURTLE.getDefaultMIMEType()).GET()
 			.build();
 
 		HttpResponse<InputStream> resp = client.send(req, HttpResponse.BodyHandlers.ofInputStream());
 		return Rio.parse(resp.body(), uri.toString(), RDFFormat.TURTLE);
+	}
+	
+	public static <T extends Dao> T get(URI uri, T dao) {
+		try {
+			Model m = get(uri);
+			return dao.fromModel(m);
+		} catch (IOException | InterruptedException ex) {
+			//
+		}
+		return null;
 	}
 }

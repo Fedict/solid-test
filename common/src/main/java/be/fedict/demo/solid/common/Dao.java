@@ -38,8 +38,9 @@ import org.eclipse.rdf4j.model.Statement;
  * 
  * @author Bart Hanssens
  */
-public class Dao {
-	
+public abstract class Dao {
+	private Model m;
+
 	/**
 	 * Get only one statement
 	 * 
@@ -52,4 +53,13 @@ public class Dao {
 		Iterator<Statement> iter = m.getStatements(subj, pred, null).iterator();
 		return iter.hasNext() ? Optional.of(iter.next()) : Optional.empty();
 	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param <T>
+	 * @param m 
+	 * @return  
+	 */
+	public abstract <T extends Dao> T fromModel(Model m);
 }

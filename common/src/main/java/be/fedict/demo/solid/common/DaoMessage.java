@@ -26,12 +26,15 @@
 package be.fedict.demo.solid.common;
 
 import java.util.Optional;
+import org.eclipse.rdf4j.model.BNode;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.LDP;
 import org.eclipse.rdf4j.model.vocabulary.VCARD4;
@@ -41,51 +44,33 @@ import org.eclipse.rdf4j.model.vocabulary.VCARD4;
  * 
  * @author Bart Hanssens
  */
-public class DaoProfile extends Dao {
+public class DaoMessage extends Dao {
 	private IRI iri;
-	private String name;
-	private String email;
-	private IRI inbox;
+	private String title;
+	private String description;
 	
 	public IRI getIRI() {
 		return iri;
 	}
 
-	public String getName() {
-		return name;
+	public String getTitle() {
+		return title;
 	}
 
-	public String getMail() {
-		return email;
+	public String getDescription() {
+		return description;
 	}
 
-	public IRI getInbox() {
-		return inbox;
-	}
-
-	public DaoProfile(Model m) {
-		Optional<Statement> stmt; 
-		stmt = Dao.getStatement(m, null, FOAF.PRIMARY_TOPIC);
-		iri = stmt.isPresent() ? (IRI) stmt.get().getObject() : null;
+	public void toModel() {
+		Model m = new LinkedHashModel();
 		
-		stmt = Dao.getStatement(m, iri, FOAF.NAME);
-		name = stmt.get().getObject().toString();
-		
-		stmt = Dao.getStatement(m, iri, VCARD4.HAS_EMAIL);
-		Value val = stmt.get().getObject();
-		if (val instanceof Resource) {
-			String str = val.toString();
+		BNode b = createBNode("a");
+		m.add(b, DCTERMS.TITLE, createLiteral(title));
+		m.add(b, DCTERMS.DESCRIPTION, createLiteral(description));
+	}
 
-			if (!str.startsWith("mailto:")) {
-				stmt = Dao.getStatement(m, (Resource) val, VCARD4.VALUE);
-				str = stmt.get().getObject().toString();
-			}
-			email = str.substring("mailto:".length());
-		}
-	
-		stmt = Dao.getStatement(m, iri, LDP.INBOX);
-		if (stmt.isPresent()) {
-			inbox = (IRI) stmt.get().getObject();
-		}
+	public DaoMessage(String title, String message) {
+		this.title = title;
+		this.description = message;
 	}
 }

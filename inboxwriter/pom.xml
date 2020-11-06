@@ -7,13 +7,13 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>be.fedict.demo.solid</groupId>
-    <artifactId>profilereader</artifactId>
+    <artifactId>inboxwriter</artifactId>
     <packaging>jar</packaging>
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
     </properties>
-    <dependencies>
+	  <dependencies>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
@@ -67,7 +67,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>be.fedict.demo.solid.profilereader.Main</mainClass>
+                                    <mainClass>be.fedict.demo.solid.inboxwriter.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -76,5 +76,5 @@
             </plugin>
         </plugins>
     </build>
-    <name>Solid ProfileReader</name>
+    <name>Solid InboxWriter</name>
 </project>

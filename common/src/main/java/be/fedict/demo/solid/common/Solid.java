@@ -30,20 +30,25 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.slf4j.Logger;
+
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Bart Hanssens
  */
 public class Solid {
+	private static final Logger LOG = LoggerFactory.getLogger(Solid.class);
+
 	private static final HttpClient client;
 	
 	static {
@@ -53,27 +58,63 @@ public class Solid {
 	}
 	
 	/**
-	 * Get a series of triples as an RDF4J model from solid
+	 * Get a series of triples as an RDF4J model from Solid
 	 * 
-	 * @param uri
-	 * @return
+	 * @param uri location to retrieve the data from
+	 * @return RDF model
 	 * @throws IOException
 	 * @throws InterruptedException 
 	 */
 	public static Model get(URI uri) throws IOException, InterruptedException {
+		LOG.info("GET {}", uri);
+
 		HttpRequest req = HttpRequest.newBuilder().timeout(Duration.ofMinutes(1))
-			.uri(uri).header("Content-Type", RDFFormat.TURTLE.getDefaultMIMEType()).GET()
+			.uri(uri).header("Accept", RDFFormat.TURTLE.getDefaultMIMEType())
+			.GET()
 			.build();
 
-		HttpResponse<InputStream> resp = client.send(req, HttpResponse.BodyHandlers.ofInputStream());
+		HttpResponse<InputStream> resp = client.send(req, BodyHandlers.ofInputStream());
+		LOG.info("  Code {}", resp.statusCode());
+		
 		return Rio.parse(resp.body(), uri.toString(), RDFFormat.TURTLE);
 	}
 	
-	public static <T extends Dao> T get(URI uri, T dao) {
+	/**
+	 * Post a series of triples to Solid
+	 * 
+	 * @param uri
+	 * @param dao 
+	 * @return HTTP status code 
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	public static int post(URI uri, Dao dao) throws IOException, InterruptedException {
+		LOG.info("POST {}", uri);
+
+		HttpRequest req = HttpRequest.newBuilder().timeout(Duration.ofMinutes(1))
+			.uri(uri).header("Content-Type", RDFFormat.TURTLE.getDefaultMIMEType())
+			.POST(BodyPublishers.ofString(dao.toTurtle()))
+			.build();
+		
+		HttpResponse<String> resp = client.send(req, BodyHandlers.ofString());
+		LOG.info("  Code {}", resp.statusCode());
+		
+		return resp.statusCode();
+	}
+
+	/**
+	 * Get a DAO based on RDF model
+	 * 
+	 * @param <T>
+	 * @param uri location to retrieve the data from
+	 * @param dao DAO
+	 * @return 
+	 */
+	public static <T extends Dao> T get(URI uri, Class<T> dao) {
 		try {
 			Model m = get(uri);
-			return dao.fromModel(m);
-		} catch (IOException | InterruptedException ex) {
+			return dao.getConstructor(Model.class).newInstance(m);
+		} catch (Exception ex) {
 			//
 		}
 		return null;

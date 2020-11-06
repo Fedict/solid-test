@@ -25,13 +25,19 @@
  */
 package be.fedict.demo.solid.common;
 
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Optional;
+import org.eclipse.rdf4j.model.BNode;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 
 /**
  * Data object
@@ -40,6 +46,22 @@ import org.eclipse.rdf4j.model.Statement;
  */
 public abstract class Dao {
 	private Model m;
+
+	protected Model getModel() {
+		return m;
+	}
+
+	public static IRI createIRI(String str) {
+		return SimpleValueFactory.getInstance().createIRI(str);
+	}
+
+	public static BNode createBNode(String str) {
+		return SimpleValueFactory.getInstance().createBNode(str);
+	}
+
+	public static Literal createLiteral(String str) {
+		return SimpleValueFactory.getInstance().createLiteral(str);
+	}
 
 	/**
 	 * Get only one statement
@@ -53,13 +75,14 @@ public abstract class Dao {
 		Iterator<Statement> iter = m.getStatements(subj, pred, null).iterator();
 		return iter.hasNext() ? Optional.of(iter.next()) : Optional.empty();
 	}
-	
+
 	/**
-	 * Constructor
 	 * 
-	 * @param <T>
-	 * @param m 
-	 * @return  
+	 * @return 
 	 */
-	public abstract <T extends Dao> T fromModel(Model m);
+	public String toTurtle() {
+		StringWriter str = new StringWriter();
+		Rio.write(m, str, RDFFormat.TURTLE);
+		return str.toString();
+	}
 }

@@ -23,8 +23,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fedict.demo.solid.profilereader;
+package be.fedict.demo.solid.inboxwriter;
 
+import be.fedict.demo.solid.common.DaoMessage;
 import be.fedict.demo.solid.common.DaoProfile;
 import be.fedict.demo.solid.common.Solid;
 
@@ -38,21 +39,30 @@ import picocli.CommandLine.Option;
  *
  * @author Bart Hanssens
  */
-@Command(name = "profilereader", version = "1.0", description = "Read SOLID profile.")
+@Command(name = "inboxwriter", version = "1.0", description = "Write to SOLID inbox.")
 public class Main implements Runnable {
 	@Option(names = "-p", arity = "1", description = "The URL of person.")
     private String profile;
 
+	@Option(names = "-t", arity = "1", description = "Title of the message")
+    private String title;
+
+	@Option(names = "-d", arity = "1", description = "Description of the message")
+    private String desc;
+		
 	@Override
 	public void run()  {
 		URI uri = URI.create(profile + "/profile/card");
 		
 		DaoProfile dao = Solid.get(uri, DaoProfile.class);
-
-		System.out.println("Name : " + dao.getName());
-		System.out.println("Email : " + dao.getMail());
-		System.out.println("Inbox : " + dao.getInbox());
-
+		URI inbox = URI.create(dao.getInbox().toString());
+		
+		DaoMessage msg = new DaoMessage(title, desc);
+		try {
+			Solid.post(inbox, msg);
+		} catch (Exception ex) {
+//
+		}
 	}
 
 	public static void main(String[] args) {
